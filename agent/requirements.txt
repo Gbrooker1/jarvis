@@ -1,0 +1,11 @@
+# LiveKit agent framework
+livekit-agents[google]>=1.2
+livekit-plugins-noise-cancellation>=0.3
+# Token server
+fastapi>=0.115
+uvicorn[standard]>=0.30
+# Tools
+ddgs>=9.0
+requests>=2.32
+# Env loading
+python-dotenv>=1.0

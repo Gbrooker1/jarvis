@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>JARVIS</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>JARVIS</h1>
+    <p id="status">offline</p>
+  </header>
+
+  <canvas id="waveform" width="600" height="120"></canvas>
+
+  <div id="transcript"></div>
+
+  <div id="video-row">
+    <video id="local-video" autoplay muted playsinline></video>
+    <video id="remote-video" autoplay playsinline></video>
+  </div>
+
+  <div id="controls">
+    <button id="camera-btn" class="round secondary" aria-label="Toggle camera">📷</button>
+    <button id="mic-btn" class="round primary" aria-label="Talk to JARVIS">🎙️</button>
+    <button id="connect-btn" class="round secondary" aria-label="Connect">🔌</button>
+  </div>
+
+  <div id="settings">
+    <input id="token-url" type="url" placeholder="Token server URL (e.g. http://host:8001)">
+    <input id="room-name" type="text" placeholder="Room name" value="jarvis-room">
+    <button id="save-settings">Save</button>
+  </div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
