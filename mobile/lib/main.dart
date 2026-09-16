@@ -49,8 +49,16 @@ class _JarvisHomeState extends State<JarvisHome> {
   String _status = 'offline';
   final List<ChatMsg> _msgs = [];
   final _scroll = ScrollController();
+  final _textCtrl = TextEditingController();
   String _tokenServer = '';
   String _roomName = 'jarvis-room';
+
+  @override
+  void dispose() {
+    _textCtrl.dispose();
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -165,6 +173,23 @@ class _JarvisHomeState extends State<JarvisHome> {
     _addMsg('jarvis', on ? 'Camera on — I can see you now.' : 'Camera off.');
   }
 
+  Future<void> _sendText() async {
+    final text = _textCtrl.text.trim();
+    if (text.isEmpty) return;
+    if (!_connected) {
+      await _connect();
+      if (!_connected) return;
+    }
+    _textCtrl.clear();
+    _addMsg('you', text);
+    try {
+      await _room!.localParticipant
+          ?.sendText(text, options: SendTextOptions(topic: 'lk.chat'));
+    } catch (e) {
+      _addMsg('jarvis', 'Could not send: $e');
+    }
+  }
+
   void _openSettings() {
     final serverCtrl = TextEditingController(text: _tokenServer);
     final roomCtrl = TextEditingController(text: _roomName);
@@ -276,6 +301,46 @@ class _JarvisHomeState extends State<JarvisHome> {
                     ),
                   );
                 },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _textCtrl,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _sendText(),
+                      decoration: InputDecoration(
+                        hintText: 'Type to JARVIS...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _sendText,
+                    child: Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF1B5E8A),
+                        border: Border.all(
+                            color: const Color(0xFF29B6F6)
+                                .withValues(alpha: 0.4),
+                            width: 2),
+                      ),
+                      child: const Icon(Icons.send,
+                          size: 26, color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
