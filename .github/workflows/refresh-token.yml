@@ -1,0 +1,68 @@
+name: Refresh JARVIS room token
+
+# Mints a fresh LiveKit access token and publishes it as the `token` file
+# in the repo root. The Android app fetches it from
+# https://raw.githubusercontent.com/Gbrooker1/jarvis/main/token
+# (the app appends /token to whatever base URL is in its settings).
+#
+# Required repository secrets: LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # every Sunday 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Mint token
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+        run: |
+          pip install livekit
+          python - <<'EOF'
+          import json, os
+          from datetime import timedelta
+          from livekit import api
+          tok = (
+              api.AccessToken(os.environ["LIVEKIT_API_KEY"], os.environ["LIVEKIT_API_SECRET"])
+              .with_identity("g-phone")
+              .with_name("g-phone")
+              .with_grants(api.VideoGrants(
+                  room_join=True,
+                  room="jarvis-room",
+                  can_publish=True,
+                  can_subscribe=True,
+                  can_publish_data=True,
+              ))
+              .with_ttl(timedelta(days=30))
+          )
+          data = {
+              "token": tok.to_jwt(),
+              "url": os.environ["LIVEKIT_URL"],
+              "room": "jarvis-room",
+          }
+          with open("token", "w") as f:
+              f.write(json.dumps(data))
+          print("token minted")
+          EOF
+
+      - name: Commit refreshed token
+        run: |
+          git config user.name "jarvis-token-bot"
+          git config user.email "jarvis-token-bot@users.noreply.github.com"
+          git add token
+          git diff --cached --quiet || git commit -m "chore: refresh JARVIS room token"
+          git push
