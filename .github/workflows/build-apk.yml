@@ -28,10 +28,28 @@ jobs:
 
       - name: Build Release APK
         working-directory: mobile
-        run: flutter build apk --release
+        run: |
+          set +e
+          flutter build apk --release > "$GITHUB_WORKSPACE/build.log" 2>&1
+          STATUS=$?
+          if [ $STATUS -ne 0 ]; then
+            echo "::error::Flutter build failed with exit code $STATUS. Log tail:"
+            tail -40 "$GITHUB_WORKSPACE/build.log" | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+            exit 1
+          fi
+          echo "Build succeeded."
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: jarvis-app-release
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: ${{ github.workspace }}/build.log
