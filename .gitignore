@@ -1,0 +1,7 @@
+# Secrets and local environment - never commit real credentials
+# (the root `token` file is published on purpose for the app - do not ignore it)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
