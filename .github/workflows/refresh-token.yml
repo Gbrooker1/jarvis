@@ -4,12 +4,13 @@ name: Refresh JARVIS room token
 # in the repo root. The Android app fetches it from
 # https://raw.githubusercontent.com/Gbrooker1/jarvis/main/token
 # (the app appends /token to whatever base URL is in its settings).
+# Tokens live 48 hours and are refreshed daily (see the schedule below).
 #
 # Required repository secrets: LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
 
 on:
   schedule:
-    - cron: '0 3 * * 0'  # every Sunday 03:00 UTC
+    - cron: '0 3 * * *'  # daily 03:00 UTC - the token TTL is 48h, so it must refresh daily
   workflow_dispatch:
 
 permissions:
@@ -47,7 +48,7 @@ jobs:
                   can_subscribe=True,
                   can_publish_data=True,
               ))
-              .with_ttl(timedelta(days=30))
+              .with_ttl(timedelta(hours=48))
           )
           data = {
               "token": tok.to_jwt(),
