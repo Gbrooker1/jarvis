@@ -32,7 +32,7 @@ jobs:
           LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
           LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
         run: |
-          pip install livekit
+          pip install livekit livekit-api
           python - <<'EOF'
           import json, os
           from datetime import timedelta
